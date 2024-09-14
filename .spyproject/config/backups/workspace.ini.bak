@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = 'empty-project-type'
-recent_files = ['Document_Reader.py', '..\\..\\anaconda3\\envs\\condaEnv\\Lib\\site-packages\\langchain_text_splitters\\character.py']
+recent_files = ['Document_Reader.py', '..\\..\\anaconda3\\envs\\condaEnv\\Lib\\site-packages\\faiss\\swigfaiss.py', '..\\..\\anaconda3\\envs\\condaEnv\\Lib\\site-packages\\google\\generativeai\\generative_models.py']
 
 [main]
 version = 0.2.0

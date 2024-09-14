@@ -6,7 +6,6 @@ Created on Thu Sep 12 08:06:32 2024
 """
 
 from langchain_community.document_loaders import PyPDFLoader
-
 loader = PyPDFLoader('Arun Joshi CV.pdf')
 pages = loader.load_and_split()
 initial_page = pages[0]
@@ -42,9 +41,53 @@ import faiss
 index= faiss.IndexFlatL2(768)
 index.add(vectors)
 
-search_query = "Where does Arun live?"
-search_vector = model.encode(search_query)
+search_query = "Where does Arun Joshi like doing?"
 import numpy as np
-search_vector = np.array(search_vector).reshape(1,-1)
-index.search(search_vector, k = 2)
 
+
+def get_indexval_from_vectorstore(query, encoder):
+    search_vector = encoder.encode(search_query)
+    search_vector = np.array(search_vector).reshape(1,-1)
+    similar_data_info = index.search(search_vector, k = 2)
+    index_values = [val for val in similar_data_info[1][0]]
+    print(index_values)
+    return index_values
+
+def get_similar_context(query, encoder):
+    similar_data = ''
+    index_values = get_indexval_from_vectorstore(query, encoder)
+    for i in index_values:
+        similar_data += chunks[i].page_content
+        similar_data += '\n\n'
+    return similar_data
+    
+similar_context = get_similar_context(search_query, model)
+print(similar_context)
+
+import os
+from dotenv import load_dotenv 
+load_dotenv() 
+ 
+api_key = os.getenv("GEMINI_API_KEY")
+
+import google.generativeai as genai
+from langchain.prompts import PromptTemplate
+genai.configure(api_key=api_key)
+llm = genai.GenerativeModel("gemini-1.5-flash")
+llm_prompt_template = """You are an assistant for question-answering tasks.
+Use the following context to answer the question.
+If you don't know the answer, just say that you don't know.
+Use five sentences maximum and keep the answer concise.\n
+Question: {question} \nContext: {context} \nAnswer:"""
+llm_prompt = PromptTemplate.from_template(llm_prompt_template)
+
+print(llm_prompt)
+
+formatted_prompt = llm_prompt.format(
+    question=search_query,
+    context=get_similar_context(search_query, model)
+)
+
+answer = llm.generate_content(formatted_prompt)
+
+print(answer.text)
